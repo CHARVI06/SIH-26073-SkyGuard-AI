@@ -8,3 +8,5 @@ joblib
 flask
 plotly
 shap
+h5py
+pytest

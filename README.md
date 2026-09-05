@@ -25,6 +25,34 @@ to identify abnormal observations, sensor faults, temporal anomalies, communicat
 - Support possible corrected/imputed values
 - Support scalable monitoring of multiple AWS stations
 
+## Member 1 Data Engineering and Core ML
+
+Member 1's reusable pipeline is in `src/data/`, `src/features/`, and `src/models/`.
+It reads the supplied immutable `Dataset/imd_maitri.csv` file (which has no
+header row), converts its `-999` missing-value marker, interpolates only short
+internal gaps, and produces model-ready temperature, pressure, and humidity
+features. The mapping is verified against the supplied NetCDF subset:
+`tempr` is temperature, `rh` is atmospheric pressure, and `ap` is relative
+humidity. Wind speed/direction are present in the source but are not baseline
+model features.
+
+From the repository root, install dependencies and run:
+
+```powershell
+python -m pip install -r requirements.txt
+python -m src.run_member1
+pytest -q
+```
+
+The CLI writes regenerable outputs to `data/processed/` and `data/synthetic/`:
+a feature dataset, labelled synthetic spike/drop/freeze/drift/missing scenarios,
+`member1_report.json` containing source quality facts, feature names, and
+Isolation Forest evaluation metrics, plus a lightweight baseline artifact at
+`models/member1_isolation_forest.joblib`. These derived artifacts are ignored
+by Git.
+See `docs/dataset.md` for exact dataset constraints and `docs/member1.md` for
+the feature and model contract provided to later members.
+
 ## Proposed Architecture
 
 AWS Data
