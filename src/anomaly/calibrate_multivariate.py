@@ -30,14 +30,16 @@ N_EVAL_SEQUENCES = 500
 
 # Candidate thresholds to investigate.
 CANDIDATE_THRESHOLDS = [
-    3.0,
-    4.0,
-    5.0,
-    6.0,
-    7.0,
-    8.0,
-    9.0,
-    10.0,
+    0.50,
+    0.55,
+    0.60,
+    0.65,
+    0.70,
+    0.75,
+    0.80,
+    0.85,
+    0.90,
+    0.95,
 ]
 
 
