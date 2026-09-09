@@ -10,3 +10,4 @@ plotly
 shap
 h5py
 pytest
+torch
