@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKYGUARD AI - Station Overview</title>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+/* =========================================================
+   SKYGUARD AI — METEOROLOGICAL RADAR COMMAND UI
+   SIH 2026 Grand Finale Custom Theme
+   ========================================================= */
+
+:root {
+    --bg-base: #030712;
+    --bg-sidebar: #060d1a;
+    --bg-card: rgba(10, 18, 32, 0.85);
+    --bg-card-hover: rgba(15, 27, 48, 0.95);
+
+    --border-color: rgba(56, 189, 248, 0.15);
+    --border-highlight: rgba(56, 189, 248, 0.5);
+
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-sub: #cbd5e1;
+
+    --cyan-accent: #38bdf8;
+    --blue-accent: #60a5fa;
+    --purple-accent: #a78bfa;
+    --pink-accent: #fb7185;
+    --green-accent: #34d399;
+    --yellow-accent: #fbbf24;
+
+    --card-radius: 12px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-base);
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(167, 139, 250, 0.05) 0%, transparent 40%);
+    color: var(--text-main);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Radar grid scanline texture */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.15;
+    background-image: 
+        linear-gradient(rgba(56, 189, 248, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+    z-index: 0;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.sidebar {
+    width: 260px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px 16px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    padding-left: 4px;
+}
+
+.brand-logo {
+    width: 36px;
+    height: 36px;
+    color: var(--cyan-accent);
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));
+}
+
+.brand-text h1 {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.brand-text h1 span {
+    color: var(--cyan-accent);
+}
+
+.brand-text p {
+    font-size: 7px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 1.2px;
+    margin-top: 3px;
+}
+
+.nav-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.nav-item svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+}
+
+.nav-item:hover {
+    color: #fff;
+    background: rgba(56, 189, 248, 0.06);
+    border-color: rgba(56, 189, 248, 0.15);
+}
+
+.nav-item.active {
+    color: var(--cyan-accent);
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: inset 3px 0 0 var(--cyan-accent);
+    font-weight: 600;
+}
+
+.sidebar-bottom {
+    background: rgba(52, 211, 153, 0.05);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+    border-radius: var(--card-radius);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    background-color: var(--green-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--green-accent);
+}
+
+.status-info h4 {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.3px;
+}
+
+.status-info p {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+/* =========================================================
+   MAIN CONTENT AREA
+   ========================================================= */
+
+.main-content {
+    flex: 1;
+    padding: 24px 32px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+    z-index: 1;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 14px;
+}
+
+.header-title p {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--cyan-accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.header-title h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 2px;
+    letter-spacing: -0.3px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.station-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(10, 18, 32, 0.6);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.station-status .dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--green-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--green-accent);
+}
+
+.station-status .sub {
+    color: var(--text-muted);
+    font-weight: 400;
+    display: block;
+    font-size: 9px;
+}
+
+.last-update {
+    border-left: 1px solid var(--border-color);
+    padding-left: 16px;
+    text-align: right;
+}
+
+.last-update label {
+    font-size: 9px;
+    color: var(--text-muted);
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.last-update time {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* =========================================================
+   METRIC CARDS
+   ========================================================= */
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    padding: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    border-top-left-radius: var(--card-radius);
+    border-bottom-left-radius: var(--card-radius);
+}
+
+.card.temp::before { background: var(--pink-accent); }
+.card.humidity::before { background: var(--cyan-accent); }
+.card.pressure::before { background: var(--purple-accent); }
+.card.health::before { background: var(--green-accent); }
+
+.card:hover {
+    border-color: var(--border-highlight);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+}
+
+.card-header .icon-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-header svg {
+    width: 14px;
+    height: 14px;
+}
+
+.card.temp svg { color: var(--pink-accent); }
+.card.humidity svg { color: var(--cyan-accent); }
+.card.pressure svg { color: var(--purple-accent); }
+.card.health svg { color: var(--green-accent); }
+
+.card-body {
+    margin: 10px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.card-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.card-unit {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    padding-top: 8px;
+}
+
+.badge-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+    color: var(--green-accent);
+}
+
+.badge-status .dot {
+    width: 5px;
+    height: 5px;
+    background-color: var(--green-accent);
+    border-radius: 50%;
+}
+
+.trend-value {
+    color: var(--text-sub);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* =========================================================
+   DASHBOARD ROWS
+   ========================================================= */
+
+.dashboard-row {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr;
+    gap: 14px;
+}
+
+.telemetry-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.section-header p {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--cyan-accent);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.section-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 2px;
+}
+
+/* =========================================================
+   GRAPH CONTROLS
+   ========================================================= */
+
+.controls-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.graph-select {
+    background: rgba(3, 7, 18, 0.8);
+    border: 1px solid var(--border-color);
+    color: var(--cyan-accent);
+    padding: 5px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+}
+
+.graph-select:hover {
+    border-color: var(--cyan-accent);
+}
+
+.graph-select option {
+    background: #060d1a;
+    color: #fff;
+}
+
+.time-selector {
+    display: flex;
+    background: rgba(3, 7, 18, 0.8);
+    padding: 2px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.time-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-btn:hover {
+    color: #fff;
+}
+
+.time-btn.active {
+    background: var(--cyan-accent);
+    color: #030712;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* =========================================================
+   CHART
+   ========================================================= */
+
+.chart-legend {
+    display: flex;
+    gap: 16px;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.chart-container {
+    width: 100%;
+    height: 190px;
+    position: relative;
+    background: rgba(3, 7, 18, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+}
+
+.graph-group {
+    transition: all 0.3s ease;
+}
+
+/* =========================================================
+   AI ANALYSIS
+   ========================================================= */
+
+.ai-card {
+    background: linear-gradient(135deg, rgba(10, 18, 32, 0.9), rgba(6, 13, 26, 0.95));
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: var(--card-radius);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-card::after {
+    content: "AI";
+    position: absolute;
+    right: -10px;
+    bottom: -24px;
+    font-size: 100px;
+    font-weight: 900;
+    color: rgba(56, 189, 248, 0.025);
+    pointer-events: none;
+}
+
+.ai-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: var(--cyan-accent);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.ai-status-badge .dot {
+    width: 5px;
+    height: 5px;
+    background-color: var(--cyan-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--cyan-accent);
+}
+
+.system-banner {
+    background: rgba(52, 211, 153, 0.08);
+    border: 1px solid rgba(52, 211, 153, 0.25);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.banner-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(52, 211, 153, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--green-accent);
+    flex-shrink: 0;
+}
+
+.banner-text h4 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--green-accent);
+    letter-spacing: 0.3px;
+}
+
+.banner-text p {
+    font-size: 10px;
+    color: var(--text-sub);
+    margin-top: 1px;
+}
+
+.ai-metrics-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.ai-metric-box {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.ai-metric-box label {
+    font-size: 10px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.ai-metric-box .val {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.detection-info label {
+    font-size: 9px;
+    color: var(--text-muted);
+    display: block;
+    text-transform: uppercase;
+}
+
+.detection-info h5 {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 2px;
+}
+
+.detection-info p {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+/* =========================================================
+   BOTTOM ROW
+   ========================================================= */
+
+.bottom-row {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr;
+    gap: 14px;
+}
+
+.alerts-card,
+.stats-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    padding: 16px 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+}
+
+.alerts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.alerts-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.alerts-title svg {
+    color: var(--cyan-accent);
+    width: 16px;
+    height: 16px;
+}
+
+.view-all-btn {
+    color: var(--cyan-accent);
+    font-size: 10px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.empty-alerts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 0;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.empty-icon {
+    width: 24px;
+    height: 24px;
+    background: rgba(52, 211, 153, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+    color: var(--green-accent);
+}
+
+.empty-alerts h5 {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sub);
+}
+
+.empty-alerts p {
+    font-size: 9px;
+    margin-top: 1px;
+    color: var(--text-muted);
+}
+
+/* =========================================================
+   QUICK STATS
+   ========================================================= */
+
+.quick-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.stat-box {
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    padding-right: 8px;
+}
+
+.stat-box:last-child {
+    border-right: none;
+}
+
+.stat-box label {
+    font-size: 8px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+.stat-box .number {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-box .sub-badge {
+    font-size: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+}
+
+.stat-box .sub-badge .dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+}
+
+/* =========================================================
+   NAVIGATION PAGES & TABLES
+   ========================================================= */
+
+.nav-page[hidden] {
+    display: none !important;
+}
+
+.nav-page {
+    min-height: 240px;
+}
+
+.data-list {
+    display: grid;
+    gap: 6px;
+}
+
+.data-row {
+    display: grid;
+    grid-template-columns: 110px repeat(5, 1fr);
+    gap: 8px;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.015);
+    font-size: 10px;
+    color: var(--text-sub);
+}
+
+.data-row strong {
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    font-size: 10px;
+    color: var(--text-sub);
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.status-row .ok {
+    color: var(--green-accent);
+    font-weight: 700;
+}
+
+.status-row .bad {
+    color: var(--pink-accent);
+    font-weight: 700;
+}
+
+#sensor-last-update {
+    display: block;
+    color: var(--text-muted);
+    font-size: 8px;
+    margin-top: 2px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+::-webkit-scrollbar-track {
+    background: #030712;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.2);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.4);
+}
+
+@media (max-width: 1200px) {
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-row, .bottom-row { grid-template-columns: 1fr; }
+}
+    </style>
+<link rel="stylesheet" href="skyguard-cosmic-aurora.css">
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17.5 19.5a4.5 4.5 0 0 0 2.5-8.5a6 6 0 0 0-11.2-1.8A4.5 4.5 0 0 0 4.5 19.5h13z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="brand-text">
+                    <h1>SKYGUARD <span>AI</span></h1>
+                    <p>RADAR TELEMETRY COMMAND</p>
+                </div>
+            </div>
+
+            <ul class="nav-list">
+                <li class="nav-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Dashboard
+                </li>
+                <li class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                    Live Data
+                </li>
+                <li class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    History
+                </li>
+                <li class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Alerts
+                </li>
+                <li class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    System
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="status-indicator" id="sidebar-status-dot"></div>
+            <div class="status-info">
+                <h4 id="sidebar-status">System Offline</h4>
+                <p id="sidebar-status-detail">Waiting for backend</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-title">
+                <p>AUTOMATIC WEATHER STATION</p>
+                <h2>Station Overview</h2>
+            </div>
+            <div class="header-right">
+                <div class="station-status">
+                    <span class="dot"></span>
+                    <div>
+                        AWS-001
+                        <span class="sub" id="station-state">Station Active</span>
+                        <span class="sub" id="station-location">Greater Noida, Uttar Pradesh, India</span>
+                    </div>
+                </div>
+                <div class="last-update">
+                    <label>Current time</label>
+                    <time id="current-time">--</time>
+                    <span class="sub" id="sensor-last-update">Last sensor update: --</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- TOP METRICS GRID -->
+<section class="metrics-grid">
+
+    <!-- TEMPERATURE -->
+    <div class="card temp">
+
+        <div class="card-header">
+
+            <div class="icon-title">
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+                </svg>
+
+                TEMPERATURE
+            </div>
+
+            <span>°C</span>
+
+        </div>
+
+        <div class="card-body">
+
+            <span class="card-value">24.4</span>
+            <span class="card-unit">°C</span>
+
+        </div>
+
+        <div class="card-footer">
+
+            <span class="badge-status">
+                <span class="dot"></span>
+                Normal
+            </span>
+
+            <span class="trend-value">
+                +0.3°C
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- HUMIDITY -->
+    <div class="card humidity">
+
+        <div class="card-header">
+
+            <div class="icon-title">
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                </svg>
+
+                HUMIDITY
+
+            </div>
+
+            <span>%</span>
+
+        </div>
+
+        <div class="card-body">
+
+            <span class="card-value">66.0</span>
+            <span class="card-unit">%</span>
+
+        </div>
+
+        <div class="card-footer">
+
+            <span class="badge-status">
+                <span class="dot"></span>
+                Normal
+            </span>
+
+            <span class="trend-value">
+                -1.2%
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- PRESSURE -->
+    <div class="card pressure">
+
+        <div class="card-header">
+
+            <div class="icon-title">
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                    />
+
+                    <path
+                        d="M12 6v6l4 2"
+                    />
+
+                </svg>
+
+                PRESSURE
+
+            </div>
+
+            <span>hPa</span>
+
+        </div>
+
+        <div class="card-body">
+
+            <span class="card-value">1011.7</span>
+            <span class="card-unit">hPa</span>
+
+        </div>
+
+        <div class="card-footer">
+
+            <span class="badge-status">
+                <span class="dot"></span>
+                Normal
+            </span>
+
+            <span class="trend-value">
+                -0.6 hPa
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- SENSOR HEALTH -->
+    <div class="card health">
+
+        <div class="card-header">
+
+            <div class="icon-title">
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <polyline
+                        points="3 12 7 12 10 5 14 19 17 12 21 12"
+                    />
+                </svg>
+
+                SENSOR HEALTH
+
+            </div>
+
+            <span>%</span>
+
+        </div>
+
+        <div class="card-body">
+
+            <span class="card-value">85</span>
+            <span class="card-unit">%</span>
+
+        </div>
+
+        <div class="card-footer">
+
+            <span class="badge-status">
+                <span class="dot"></span>
+                Excellent
+            </span>
+
+            <span class="trend-value">
+                Stable
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+        <!-- MIDDLE ROW: CHART & AI ANALYSIS -->
+        <section class="dashboard-row">
+            <!-- REAL-TIME TELEMETRY CHART -->
+            <div class="telemetry-card">
+                <div class="section-header">
+                    <div>
+                        <p>REAL-TIME TELEMETRY</p>
+                        <h3 id="chart-heading">Sensor Trends</h3>
+                    </div>
+                    <div class="controls-group">
+                        <!-- Dropdown Menu for separate/combined views -->
+                        <select class="graph-select" id="graphViewSelector">
+                            <option value="combined">Combined View</option>
+                            <option value="separate">Separate View</option>
+                            <option value="temp">Temperature Graph</option>
+                            <option value="humidity">Humidity Graph</option>
+                            <option value="pressure">Pressure Graph</option>
+                        </select>
+
+                        <div class="time-selector">
+                            <button class="time-btn active">24H</button>
+                            <button class="time-btn">7D</button>
+                            <button class="time-btn">30D</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-legend">
+                    <div class="legend-item" id="legend-temp"><span class="legend-dot" style="background-color: var(--pink-accent);"></span> Temperature (°C)</div>
+                    <div class="legend-item" id="legend-humidity"><span class="legend-dot" style="background-color: var(--cyan-accent);"></span> Humidity (%)</div>
+                    <div class="legend-item" id="legend-pressure"><span class="legend-dot" style="background-color: var(--purple-accent);"></span> Pressure (hPa)</div>
+                    <div class="legend-item" id="legend-anomaly"><span class="legend-dot" style="background-color: var(--yellow-accent);"></span> Anomaly</div>
+                </div>
+
+                <!-- Chart Container -->
+                <div class="chart-container">
+                    <svg width="100%" height="100%" viewBox="0 0 700 200" preserveAspectRatio="none">
+                        <!-- Grid Lines -->
+                        <line x1="50" y1="20" x2="680" y2="20" stroke="rgba(255,255,255,0.04)" stroke-dasharray="3 3"/>
+                        <line x1="50" y1="70" x2="680" y2="70" stroke="rgba(255,255,255,0.04)" stroke-dasharray="3 3"/>
+                        <line x1="50" y1="120" x2="680" y2="120" stroke="rgba(255,255,255,0.04)" stroke-dasharray="3 3"/>
+                        <line x1="50" y1="170" x2="680" y2="170" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+
+                        <!-- Dynamic Y-Axis Labels Group -->
+                        <g id="dynamic-axis">
+                            <!-- Populated dynamically via JS -->
+                        </g>
+
+                        <!-- Dynamic Paths Group -->
+                        <g id="dynamic-paths">
+                            <!-- Temperature Line -->
+                            <path id="path-temp" class="graph-group" fill="none" stroke="#fb7185" stroke-width="2"/>
+                            <g id="dots-temp" class="graph-group"></g>
+
+                            <!-- Humidity Line -->
+                            <path id="path-humidity" class="graph-group" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                            <g id="dots-humidity" class="graph-group"></g>
+
+                            <!-- Pressure Line -->
+                            <path id="path-pressure" class="graph-group" fill="none" stroke="#a78bfa" stroke-width="2"/>
+                            <g id="dots-pressure" class="graph-group"></g>
+                        </g>
+
+                        <!-- Time/date axis labels are populated from backend timestamps -->
+                        <g id="x-axis-labels"></g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- AI ANALYSIS PANEL -->
+            <div class="ai-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 9px; font-weight: 700; color: var(--cyan-accent); letter-spacing: 1px;">AI ANALYSIS</p>
+                        <h3 style="font-size: 15px; font-weight: 600; color: #fff; margin-top: 2px;">System Status</h3>
+                    </div>
+                    <div class="ai-status-badge">
+                        <span class="dot"></span> AI ACTIVE
+                    </div>
+                </div>
+
+                <div class="system-banner">
+                    <div class="banner-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="banner-text">
+                        <h4>SYSTEM NORMAL</h4>
+                        <p>No abnormal sensor behavior detected.</p>
+                    </div>
+                </div>
+
+                <div class="ai-metrics-row">
+                    <div class="ai-metric-box">
+                        <label>Confidence</label>
+                        <div class="val">97.0%</div>
+                    </div>
+                    <div class="ai-metric-box">
+                        <label>Health Score</label>
+                        <div class="val">98%</div>
+                    </div>
+                </div>
+
+                <div class="detection-info">
+                    <label>Detection Engine</label>
+                    <h5>Temporal + Multivariate AI</h5>
+                    <p>No active anomaly</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOTTOM ROW: RECENT ALERTS & QUICK STATS -->
+        <section class="bottom-row">
+            <!-- RECENT ALERTS TABLE -->
+            <div class="alerts-card">
+                <div class="alerts-header">
+                    <div class="alerts-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        Recent Alerts
+                    </div>
+                    <a href="#" class="view-all-btn">View All &rarr;</a>
+                </div>
+
+                <div class="empty-alerts">
+                    <div class="empty-icon">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <h5>No recent alerts</h5>
+                    <p>All systems are operating normally.</p>
+                </div>
+            </div>
+
+            <!-- QUICK STATS -->
+            <div class="stats-card">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #fff;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-accent)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    Quick Stats
+                </div>
+
+                <div class="quick-stats-grid">
+                    <div class="stat-box">
+                        <label>Total Observations</label>
+                        <div class="number">58</div>
+                        <div class="sub-badge"><span class="dot" style="background: var(--green-accent);"></span> High Severity 0</div>
+                    </div>
+                    <div class="stat-box">
+                        <label>Total Anomalies</label>
+                        <div class="number">0</div>
+                        <div class="sub-badge"><span class="dot" style="background: var(--cyan-accent);"></span> Avg. Health 98%</div>
+                    </div>
+                    <div class="stat-box">
+                        <label>Uptime</label>
+                        <div class="number">99.9%</div>
+                        <div class="sub-badge"><span class="dot" style="background: var(--green-accent);"></span> Last 24 Hours</div>
+                    </div>
+                    <div class="stat-box">
+                        <label>Data Freshness</label>
+                        <div class="number">2 min</div>
+                        <div class="sub-badge"><span class="dot" style="background: var(--green-accent);"></span> Real-time</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- NON-DASHBOARD NAVIGATION VIEWS -->
+        <section id="page-live" class="telemetry-card nav-page" hidden>
+            <div class="section-header"><div><p>LIVE DATA</p><h3>Latest Sensor Observations</h3></div></div>
+            <div id="live-list" class="empty-alerts"><h5>Waiting for sensor data</h5><p>No observation has been received yet.</p></div>
+        </section>
+        <section id="page-history" class="telemetry-card nav-page" hidden>
+            <div class="section-header"><div><p>HISTORY</p><h3>Past Anomalies & Events</h3></div></div>
+            <div id="history-list" class="empty-alerts"><h5>No historical events</h5><p>No anomaly or event records were returned by the backend.</p></div>
+        </section>
+        <section id="page-alerts" class="telemetry-card nav-page" hidden>
+            <div class="section-header"><div><p>ALERTS</p><h3>Active & Historical Alerts</h3></div></div>
+            <div id="alerts-list" class="empty-alerts"><h5>No alerts</h5><p>All systems are operating normally.</p></div>
+        </section>
+        <section id="page-system" class="telemetry-card nav-page" hidden>
+            <div class="section-header"><div><p>SYSTEM</p><h3>System Health</h3></div></div>
+            <div id="system-list" class="quick-stats-grid"></div>
+        </section>
+    </main>
+
+    <!-- DYNAMIC GRAPH SCALER SCRIPT -->
+    <script>
+        var rawData = {
+            temp:     { values: [], min: 15, max: 35, color: '#fb7185', anomalyIndexes: [] },
+            humidity: { values: [], min: 40, max: 100, color: '#38bdf8', anomalyIndexes: [] },
+            pressure: { values: [], min: 980, max: 1040, color: '#a78bfa', anomalyIndexes: [] }
+        };
+        window.rawData = rawData;
+        window.graphRows = [];
+        window.graphRange = '24H';
+
+        const selector = document.getElementById('graphViewSelector');
+        const heading = document.getElementById('chart-heading');
+        const axisGroup = document.getElementById('dynamic-axis');
+        const legendTemp = document.getElementById('legend-temp');
+        const legendHumidity = document.getElementById('legend-humidity');
+        const legendPressure = document.getElementById('legend-pressure');
+        const xAxisGroup = document.getElementById('x-axis-labels');
+
+        const PLOT_LEFT = 50, PLOT_RIGHT = 680, PLOT_TOP = 20, PLOT_BOTTOM = 170;
+
+        function valToY(val, min, max, topY, bottomY) {
+            const pct = (Number(val) - min) / (max - min);
+            const safePct = Math.max(0, Math.min(1, pct));
+            return bottomY - safePct * (bottomY - topY);
+        }
+
+        function clearPath(type) {
+            const pathElem = document.getElementById(`path-${type}`);
+            const dotsElem = document.getElementById(`dots-${type}`);
+            if (pathElem) pathElem.setAttribute('d', '');
+            if (dotsElem) dotsElem.innerHTML = '';
+        }
+
+        function drawGraph(type, minVal, maxVal, topY, bottomY, show = true) {
+            const pathElem = document.getElementById(`path-${type}`);
+            const dotsElem = document.getElementById(`dots-${type}`);
+            if (!pathElem || !dotsElem) return;
+            if (!show || !rawData[type].values.length) {
+                clearPath(type);
+                return;
+            }
+
+            const data = rawData[type];
+            const count = data.values.length;
+            const width = PLOT_RIGHT - PLOT_LEFT;
+            const step = count > 1 ? width / (count - 1) : 0;
+            let pathD = '';
+            let dotsHTML = '';
+
+            data.values.forEach((v, i) => {
+                const x = count === 1 ? (PLOT_LEFT + PLOT_RIGHT) / 2 : PLOT_LEFT + step * i;
+                const y = valToY(v, minVal, maxVal, topY, bottomY);
+                pathD += (i === 0 ? `M ${x},${y}` : ` L ${x},${y}`);
+                if (data.anomalyIndexes.includes(i)) {
+                    dotsHTML += `<polygon points="${x},${y-12} ${x+5},${y-3} ${x-5},${y-3}" fill="#fbbf24"/>`;
+                } else {
+                    dotsHTML += `<circle cx="${x}" cy="${y}" r="3" fill="${data.color}"/>`;
+                }
+            });
+            pathElem.setAttribute('d', pathD);
+            dotsElem.innerHTML = dotsHTML;
+        }
+
+        function renderXAxis() {
+            if (!xAxisGroup) return;
+            xAxisGroup.innerHTML = '';
+            const rows = window.graphRows || [];
+            if (!rows.length) return;
+
+            const count = rows.length;
+            const width = PLOT_RIGHT - PLOT_LEFT;
+            const step = count > 1 ? width / (count - 1) : 0;
+
+            let tickIndexes = [];
+            if (window.graphRange === '24H') {
+                tickIndexes = rows.map((_, i) => i);
+            } else if (window.graphRange === '7D') {
+                tickIndexes = rows.map((_, i) => i);
+            } else {
+                const targetTicks = Math.min(10, rows.length);
+                const stride = rows.length <= targetTicks ? 1 : Math.ceil((rows.length - 1) / (targetTicks - 1));
+                for (let i = 0; i < rows.length; i += stride) tickIndexes.push(i);
+                if (tickIndexes[tickIndexes.length - 1] !== rows.length - 1) tickIndexes.push(rows.length - 1);
+            }
+
+            tickIndexes.forEach(i => {
+                const row = rows[i];
+                const x = count === 1 ? (PLOT_LEFT + PLOT_RIGHT) / 2 : PLOT_LEFT + step * i;
+                const label = window.graphRange === '24H' ? formatHour(row.timestamp) : formatDate(row.timestamp);
+                const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                t.setAttribute('x', x);
+                t.setAttribute('y', '198');
+                t.setAttribute('fill', '#94a3b8');
+                t.setAttribute('font-size', window.graphRange === '24H' ? '9' : '10');
+                t.setAttribute('text-anchor', 'middle');
+                t.textContent = label;
+                xAxisGroup.appendChild(t);
+            });
+        }
+
+        function formatHour(v) {
+            const d = new Date(v);
+            if (Number.isNaN(d.getTime())) return '--';
+            return d.toLocaleTimeString('en-IN', {
+                hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata'
+            });
+        }
+        function formatDate(v) {
+            const d = new Date(v);
+            if (Number.isNaN(d.getTime())) return '--';
+            return d.toLocaleDateString('en-IN', {
+                day: '2-digit', month: 'short', timeZone: 'Asia/Kolkata'
+            });
+        }
+
+        function updateView() {
+            const mode = selector.value;
+            axisGroup.innerHTML = '';
+            legendTemp.style.opacity = '1';
+            legendHumidity.style.opacity = '1';
+            legendPressure.style.opacity = '1';
+
+            if (mode === 'combined') {
+                heading.textContent = 'Sensor Trends (Combined Full Grid)';
+                drawGraph('temp', 15, 35, 20, 170, true);
+                drawGraph('humidity', 40, 100, 20, 170, true);
+                drawGraph('pressure', 980, 1040, 20, 170, true);
+                axisGroup.innerHTML = `
+                    <text x="35" y="25" fill="#94a3b8" font-size="9">MAX</text>
+                    <text x="35" y="95" fill="#94a3b8" font-size="9">MID</text>
+                    <text x="35" y="165" fill="#94a3b8" font-size="9">MIN</text>`;
+            } else if (mode === 'separate') {
+                heading.textContent = 'Sensor Trends (Separate Bands)';
+                drawGraph('temp', 15, 35, 25, 65, true);
+                drawGraph('humidity', 40, 100, 75, 120, true);
+                drawGraph('pressure', 980, 1040, 130, 170, true);
+                axisGroup.innerHTML = `
+                    <text x="10" y="25" fill="#fb7185" font-size="9" font-weight="600">Temp</text>
+                    <text x="35" y="35" fill="#94a3b8" font-size="8">35°C</text>
+                    <text x="35" y="65" fill="#94a3b8" font-size="8">15°C</text>
+                    <text x="10" y="85" fill="#38bdf8" font-size="9" font-weight="600">Humidity</text>
+                    <text x="30" y="95" fill="#94a3b8" font-size="8">100%</text>
+                    <text x="35" y="120" fill="#94a3b8" font-size="8">40%</text>
+                    <text x="10" y="145" fill="#a78bfa" font-size="9" font-weight="600">Press.</text>
+                    <text x="25" y="155" fill="#94a3b8" font-size="8">1040</text>
+                    <text x="25" y="172" fill="#94a3b8" font-size="8">980</text>`;
+            } else if (mode === 'temp') {
+                heading.textContent = 'Temperature Trend (Full Canvas)';
+                drawGraph('temp', 15, 35, 20, 170, true);
+                clearPath('humidity'); clearPath('pressure');
+                legendHumidity.style.opacity = '0.2'; legendPressure.style.opacity = '0.2';
+                axisGroup.innerHTML = `
+                    <text x="10" y="25" fill="#fb7185" font-size="10" font-weight="700">Temperature (°C)</text>
+                    <text x="32" y="45" fill="#94a3b8" font-size="9">35°C</text>
+                    <text x="32" y="80" fill="#94a3b8" font-size="9">30°C</text>
+                    <text x="32" y="115" fill="#94a3b8" font-size="9">25°C</text>
+                    <text x="32" y="150" fill="#94a3b8" font-size="9">20°C</text>
+                    <text x="32" y="170" fill="#94a3b8" font-size="9">15°C</text>`;
+            } else if (mode === 'humidity') {
+                heading.textContent = 'Humidity Trend (Full Canvas)';
+                clearPath('temp'); drawGraph('humidity', 40, 100, 20, 170, true); clearPath('pressure');
+                legendTemp.style.opacity = '0.2'; legendPressure.style.opacity = '0.2';
+                axisGroup.innerHTML = `
+                    <text x="10" y="25" fill="#38bdf8" font-size="10" font-weight="700">Humidity (%)</text>
+                    <text x="30" y="45" fill="#94a3b8" font-size="9">100%</text>
+                    <text x="32" y="88" fill="#94a3b8" font-size="9">80%</text>
+                    <text x="32" y="130" fill="#94a3b8" font-size="9">60%</text>
+                    <text x="32" y="170" fill="#94a3b8" font-size="9">40%</text>`;
+            } else if (mode === 'pressure') {
+                heading.textContent = 'Pressure Trend (Full Canvas)';
+                clearPath('temp'); clearPath('humidity'); drawGraph('pressure', 980, 1040, 20, 170, true);
+                legendTemp.style.opacity = '0.2'; legendHumidity.style.opacity = '0.2';
+                axisGroup.innerHTML = `
+                    <text x="10" y="25" fill="#a78bfa" font-size="10" font-weight="700">Pressure (hPa)</text>
+                    <text x="25" y="45" fill="#94a3b8" font-size="9">1040</text>
+                    <text x="25" y="88" fill="#94a3b8" font-size="9">1020</text>
+                    <text x="25" y="130" fill="#94a3b8" font-size="9">1000</text>
+                    <text x="25" y="170" fill="#94a3b8" font-size="9">980</text>`;
+            }
+            renderXAxis();
+        }
+
+        selector.addEventListener('change', updateView);
+        window.updateView = updateView;
+        updateView();
+    </script>
+
+<script>
+/* SkyGuard runtime bridge: existing UI + one authoritative local backend. */
+(function () {
+    const API_BASE = document.body.dataset.apiUrl || "http://127.0.0.1:5000/api";
+    const STATION_ID = "AWS-001";
+    const LOCATION = "Greater Noida, Uttar Pradesh, India";
+    const POLL_MS = 3000;
+    const endpoints = {
+        live: `${API_BASE}/live`, history: `${API_BASE}/history`, alerts: `${API_BASE}/alerts`,
+        stats: `${API_BASE}/stats`, health: `${API_BASE}/health`, station: `${API_BASE}/station`
+    };
+    let selectedRange='24H', historyRows=[];
+    const $=(sel)=>document.querySelector(sel);
+    function n(v,fallback=null){const x=Number(v);return Number.isFinite(x)?x:fallback;}
+    function normalize(row){
+        if(!row||typeof row!=='object') return null;
+        const temperature=n(row.temperature??row.temp), humidity=n(row.humidity??row.hum), pressure=n(row.pressure??row.pres);
+        if(temperature===null&&humidity===null&&pressure===null)return null;
+        let anomaly=row.anomaly??row.is_anomaly??row.anomaly_detected??false;
+        anomaly=typeof anomaly==='string'?['true','1','yes','anomaly','abnormal'].includes(anomaly.toLowerCase()):Boolean(anomaly);
+        let score=n(row.anomaly_score??row.score), confidence=n(row.confidence??row.model_confidence), health=n(row.health_score??row.sensor_health??row.health);
+        if(score!==null&&score<=1)score*=100;if(confidence!==null&&confidence<=1)confidence*=100;if(health!==null&&health<=1)health*=100;
+        return {timestamp:row.timestamp??row.time??row.datetime??row.created_at??null,temperature,humidity,pressure,anomaly,anomaly_score:score,confidence,health_score:health,severity:row.severity??row.risk_level??null,root_cause:row.root_cause??row.cause??null,explanation:row.explanation??row.message??row.reason??null};
+    }
+    async function get(url,params={}){try{const u=new URL(url);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,String(v)));const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error();return await r.json();}catch(e){return null;}}
+    function extractRows(payload){if(Array.isArray(payload))return payload;if(!payload||typeof payload!=='object')return [];for(const k of ['readings','data','history','results','items','records','observations','alerts'])if(Array.isArray(payload[k]))return payload[k];const one=normalize(payload);return one?[one]:[];}
+    function fmt(v,d=1,s=''){return Number.isFinite(Number(v))?`${Number(v).toFixed(d)}${s}`:'--';}
+    function dateObj(v){const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
+    function localTime(v=new Date()){const d=v instanceof Date?v:dateObj(v);return d?d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}):'--';}
+    function localDate(v){const d=dateObj(v);return d?d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',timeZone:'Asia/Kolkata'}):'--';}
+    function set(sel,text){const el=$(sel);if(el)el.textContent=text;}
+    function hoursForRange(){return selectedRange==='7D'?168:selectedRange==='30D'?720:24;}
+    async function fetchHistory(){const p=await get(endpoints.history,{station_id:STATION_ID,hours:hoursForRange()});return extractRows(p).map(normalize).filter(Boolean);}
+    async function fetchLive(){return normalize(await get(endpoints.live,{station_id:STATION_ID}));}
+    async function fetchAlerts(){const p=await get(endpoints.alerts,{station_id:STATION_ID});return extractRows(p).map(normalize).filter(Boolean);}
+
+    function updateClock(){set('#current-time',localTime());}
+    function updateAxis(rows){
+        const group=$('#x-axis-labels');if(!group)return;group.innerHTML='';
+        const ordered=[...rows].sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp)).slice(-10);
+        const labels=ordered.map(r=>selectedRange==='24H'?localTime(r.timestamp).replace(/:00(?=\s?[AP]M)/,''):localDate(r.timestamp));
+        const xs=[50,120,190,260,330,400,470,540,610,680];
+        labels.forEach((label,i)=>{const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',xs[i]);t.setAttribute('y','198');t.setAttribute('fill','#94a3b8');t.setAttribute('font-size','10');t.setAttribute('text-anchor','middle');t.textContent=label;group.appendChild(t);});
+    }
+    function applyLive(live){
+        const cards=document.querySelectorAll('.card-value');
+        if(live){
+            if(cards.length>=4){cards[0].textContent=fmt(live.temperature);cards[1].textContent=fmt(live.humidity);cards[2].textContent=fmt(live.pressure);cards[3].textContent=fmt(live.health_score,0);}
+            const ai=document.querySelectorAll('.ai-metric-box .val');if(ai.length>=2){ai[0].textContent=fmt(live.confidence,1,'%');ai[1].textContent=fmt(live.health_score,0,'%');}
+            const anomaly=live.anomaly;set('.banner-text h4',anomaly?'ANOMALY DETECTED':'SYSTEM NORMAL');set('.banner-text p',live.explanation||live.root_cause||(anomaly?'Abnormal sensor behavior detected.':'No abnormal sensor behavior detected.'));set('.detection-info p',anomaly?`Anomaly score: ${fmt(live.anomaly_score,1,'%')}`:'No active anomaly');
+            set('#sensor-last-update',`Last sensor update: ${localTime(live.timestamp)}`);set('#station-state',live.anomaly?'Anomaly detected':'Station Active');
+        } else {document.querySelectorAll('.card-value').forEach(x=>x.textContent='--');document.querySelectorAll('.ai-metric-box .val').forEach(x=>x.textContent='--');set('#sensor-last-update','Last sensor update: --');set('.banner-text h4','BACKEND UNAVAILABLE');set('.banner-text p','No live observation is available.');}
+    }
+    function groupRowsForRange(rows){
+        const valid=[...rows].filter(r=>r && r.timestamp && dateObj(r.timestamp)).sort((a,b)=>dateObj(a.timestamp)-dateObj(b.timestamp));
+        if(!valid.length)return [];
+        const buckets=new Map();
+        const range=selectedRange;
+        valid.forEach(r=>{
+            const d=dateObj(r.timestamp); if(!d)return;
+            let key;
+            if(range==='24H'){
+                key=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hour12:false}).format(d);
+            }else{
+                key=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
+            }
+            if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(r);
+        });
+        return [...buckets.values()].map(bucket=>{
+            const avg=(field)=>{const vals=bucket.map(r=>Number(r[field])).filter(Number.isFinite);return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;};
+            return {
+                timestamp: bucket[Math.floor(bucket.length/2)].timestamp,
+                temperature:avg('temperature'), humidity:avg('humidity'), pressure:avg('pressure'),
+                anomaly:bucket.some(r=>!!r.anomaly),
+                anomaly_score:Math.max(...bucket.map(r=>Number(r.anomaly_score)).filter(Number.isFinite),0),
+                health_score:avg('health_score'), confidence:avg('confidence')
+            };
+        }).sort((a,b)=>dateObj(a.timestamp)-dateObj(b.timestamp));
+    }
+
+    function updateChart(rows){
+        const grouped=groupRowsForRange(rows);
+        window.graphRows=grouped;
+        window.graphRange=selectedRange;
+        rawData.temp.values=grouped.map(r=>r.temperature);
+        rawData.humidity.values=grouped.map(r=>r.humidity);
+        rawData.pressure.values=grouped.map(r=>r.pressure);
+        const anomalyIndexes=grouped.map((r,i)=>r.anomaly?i:-1).filter(i=>i>=0);
+        rawData.temp.anomalyIndexes=anomalyIndexes;
+        rawData.humidity.anomalyIndexes=anomalyIndexes;
+        rawData.pressure.anomalyIndexes=anomalyIndexes;
+        if(typeof window.updateView==='function')window.updateView();
+    }
+    function renderLive(rows){const el=$('#live-list');if(!el)return;const ordered=[...rows].sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp)).slice(0,12);if(!ordered.length){el.className='empty-alerts';el.innerHTML='<h5>No sensor observations</h5><p>No records were returned by the backend.</p>';return;}el.className='data-list';el.innerHTML=ordered.map(r=>`<div class="data-row"><strong>${localTime(r.timestamp)}</strong><span>Temp ${fmt(r.temperature)} °C</span><span>Humidity ${fmt(r.humidity)} %</span><span>Pressure ${fmt(r.pressure)} hPa</span><span>Health ${fmt(r.health_score,0)}%</span><span>${r.anomaly?'ANOMALY':'NORMAL'}</span></div>`).join('');}
+    function renderHistory(rows){const el=$('#history-list');if(!el)return;const anomalies=rows.filter(r=>r.anomaly);if(!anomalies.length){el.className='empty-alerts';el.innerHTML='<div class="empty-icon">✓</div><h5>No historical anomalies</h5><p>The backend returned no anomaly events for this period.</p>';return;}el.className='data-list';el.innerHTML=anomalies.map(r=>`<div class="data-row"><strong>${localDate(r.timestamp)}</strong><span>${localTime(r.timestamp)}</span><span>${r.severity||'Anomaly'}</span><span>${r.root_cause||'Sensor anomaly'}</span><span>Score ${fmt(r.anomaly_score,1,'%')}</span><span>${r.explanation||''}</span></div>`).join('');}
+    function renderAlerts(rows){const el=$('#alerts-list');if(!el)return;if(!rows.length){el.className='empty-alerts';el.innerHTML='<div class="empty-icon">✓</div><h5>No recent alerts</h5><p>All systems are operating normally.</p>';return;}el.className='data-list';el.innerHTML=rows.slice(0,20).map(r=>`<div class="data-row"><strong>${localDate(r.timestamp)}</strong><span>${r.severity||'Alert'}</span><span>${r.root_cause||'Sensor anomaly'}</span><span>Score ${fmt(r.anomaly_score,1,'%')}</span><span>Confidence ${fmt(r.confidence,1,'%')}</span><span>${r.explanation||''}</span></div>`).join('');}
+    function renderStats(stats){const boxes=document.querySelectorAll('.stat-box .number');if(boxes.length>=4&&stats){boxes[0].textContent=stats.total_observations??'--';boxes[1].textContent=stats.total_anomalies??'--';boxes[2].textContent=stats.uptime??'--';boxes[3].textContent=stats.latest_age_seconds!=null?`${Math.round(stats.latest_age_seconds)} sec`:'--';}}
+    function renderSystem(h){const el=$('#system-list');if(!el||!h)return;const map=[['Backend API',h.backend],['Database',h.database],['Sensor Stream',h.sensor_stream],['AI Detection',h.ai_detection],['Station',h.station],['Data Pipeline',h.data_pipeline]];el.innerHTML=map.map(([k,v])=>`<div class="status-row"><span>${k}</span><span class="${['ONLINE','ACTIVE','RUNNING','LIVE'].includes(String(v).toUpperCase())?'ok':'bad'}">${v||'UNKNOWN'}</span></div>`).join('');set('#sidebar-status',h.backend==='ONLINE'?'System Online':'System Offline');set('#sidebar-status-detail',`${h.freshness||'OFFLINE'} • ${h.database||'UNKNOWN'}`);set('#station-state',h.station==='LIVE'?'Station Active':h.station||'Station Offline');}
+    async function poll(){
+        const [live,hist,alerts,stats,health]=await Promise.all([fetchLive(),fetchHistory(),fetchAlerts(),get(endpoints.stats,{station_id:STATION_ID}),get(endpoints.health,{station_id:STATION_ID})]);
+        applyLive(live);if(hist.length){historyRows=hist;updateChart(hist);renderLive(hist);renderHistory(hist);}else{renderLive([]);renderHistory([]);}renderAlerts(alerts||[]);renderStats(stats);renderSystem(health);
+    }
+    function show(name){document.querySelectorAll('.nav-page').forEach(p=>p.hidden=true);document.querySelector('.metrics-grid').style.display='';document.querySelector('.dashboard-row').style.display='';document.querySelector('.bottom-row').style.display='';if(name!=='dashboard'){document.querySelector('.metrics-grid').style.display='none';document.querySelector('.dashboard-row').style.display='none';document.querySelector('.bottom-row').style.display='none';const page=$(`#page-${name}`);if(page)page.hidden=false;}}
+    function wireNavigation(){const items=[...document.querySelectorAll('.nav-item')];items.forEach(item=>item.addEventListener('click',()=>{items.forEach(x=>x.classList.remove('active'));item.classList.add('active');const label=item.textContent.trim().toLowerCase();show(label.includes('dashboard')?'dashboard':label.includes('live data')?'live':label.includes('history')?'history':label.includes('alerts')?'alerts':'system');}));}
+    function wireRanges(){document.querySelectorAll('.time-btn').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selectedRange=btn.textContent.trim();const rows=await fetchHistory();historyRows=rows;updateChart(rows);if(rows.length)renderHistory(rows);}));}
+    function start(){wireNavigation();wireRanges();updateClock();applyLive(null);poll();setInterval(poll,POLL_MS);setInterval(updateClock,1000);}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
+
+</body>
+</html>

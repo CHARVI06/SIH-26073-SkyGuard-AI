@@ -6,8 +6,11 @@ seaborn
 jupyter
 joblib
 flask
+flask-cors
 plotly
 shap
 h5py
 pytest
 torch
+streamlit==1.63.0
+requests
