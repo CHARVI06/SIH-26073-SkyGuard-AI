@@ -16,6 +16,31 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+st.markdown("""
+<style>
+    [data-testid="stAppViewContainer"],
+    [data-testid="stMain"] {
+        background: #090812;
+    }
+
+    [data-testid="stMainBlockContainer"],
+    .block-container {
+    max-width: 100% !important;
+    padding: 4rem 0 0 !important;
+}
+
+    [data-testid="stVerticalBlock"] {
+        gap: 0 !important;
+    }
+
+    iframe {
+        display: block !important;
+        width: 100% !important;
+        border: 0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 BASE_DIR = Path(__file__).resolve().parent
 HTML_FILE = BASE_DIR / "index.html"
 CSS_FILE = BASE_DIR / "skyguard-cosmic-aurora.css"
