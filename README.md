@@ -25,9 +25,9 @@ to identify abnormal observations, sensor faults, temporal anomalies, communicat
 - Support possible corrected/imputed values
 - Support scalable monitoring of multiple AWS stations
 
-## Member 1 Data Engineering and Core ML
+##  Data Engineering and Core ML
 
-Member 1's reusable pipeline is in `src/data/`, `src/features/`, and `src/models/`.
+Member 's reusable pipeline is in `src/data/`, `src/features/`, and `src/models/`.
 It reads the supplied immutable `Dataset/imd_maitri.csv` file (which has no
 header row), converts its `-999` missing-value marker, interpolates only short
 internal gaps, and produces model-ready temperature, pressure, and humidity
