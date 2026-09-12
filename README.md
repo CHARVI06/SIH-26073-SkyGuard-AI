@@ -1,141 +1,189 @@
 # SkyGuard AI
 
-## SIH26073 — AI/ML-Based Intelligent Anomaly Detection for Automatic Weather Stations (AWS)
+## SIH 2026: Intelligent Anomaly Detection for Automatic Weather Stations
 
-SkyGuard AI is an AI/ML-based real-time anomaly detection and sensor health monitoring system for Automatic Weather Stations (AWS).
+SkyGuard AI is an AI/ML prototype for detecting unusual behavior in Automatic Weather Station (AWS) observations. It improves the reliability of weather-station data used for monitoring and disaster preparedness by identifying readings that may indicate sensor faults, data-quality problems, or unusual environmental conditions.
 
-The system analyzes:
+The current model pipeline analyzes:
 
-- Temperature (°C)
-- Atmospheric Pressure (hPa)
-- Relative Humidity (%)
+- Temperature in °C
+- Atmospheric pressure in hPa
+- Relative humidity in %
 
-to identify abnormal observations, sensor faults, temporal anomalies, communication/data-quality issues, and possible sensor degradation.
+The prototype focuses on anomaly detection and decision support. It does not claim to predict disasters.
 
-## Objectives
+## Problem
 
-- Detect anomalies in real time
-- Identify sensor faults and abnormal observations
-- Detect spikes, frozen values, communication errors, and drift
-- Learn temporal and multivariate patterns
-- Distinguish genuine meteorological variations from sensor/data anomalies
-- Provide anomaly confidence and severity
-- Provide explainable AI-based reasoning
-- Monitor sensor health
-- Support possible corrected/imputed values
-- Support scalable monitoring of multiple AWS stations
+AWS data can contain sudden spikes, drops, frozen readings, sensor drift, missing observations, and communication gaps. A fixed threshold can miss patterns that develop over time or appear only when several sensor measurements are considered together.
 
-##  Data Engineering and Core ML
+SkyGuard AI uses data validation, temporal features, multivariate anomaly detection, and controlled fault scenarios to identify such behavior early.
 
-Member 's reusable pipeline is in `src/data/`, `src/features/`, and `src/models/`.
-It reads the supplied immutable `Dataset/imd_maitri.csv` file (which has no
-header row), converts its `-999` missing-value marker, interpolates only short
-internal gaps, and produces model-ready temperature, pressure, and humidity
-features. The mapping is verified against the supplied NetCDF subset:
-`tempr` is temperature, `rh` is atmospheric pressure, and `ap` is relative
-humidity. Wind speed/direction are present in the source but are not baseline
-model features.
+## Solution overview
 
-From the repository root, install dependencies and run:
-
-```powershell
-python -m pip install -r requirements.txt
-python -m src.run_member1
-pytest -q
+```text
+Historical AWS observations
+        ↓
+Data validation and preprocessing
+        ↓
+Temporal and rolling feature engineering
+        ↓
+Isolation Forest baseline and temporal modelling
+        ↓
+Anomaly score and anomaly flag
+        ↓
+Synthetic-fault evaluation and reporting
 ```
 
-The CLI writes regenerable outputs to `data/processed/` and `data/synthetic/`:
-a feature dataset, labelled synthetic spike/drop/freeze/drift/missing scenarios,
-`member1_report.json` containing source quality facts, feature names, and
-Isolation Forest evaluation metrics, plus a lightweight baseline artifact at
-`models/member1_isolation_forest.joblib`. These derived artifacts are ignored
-by Git.
-See `docs/dataset.md` for exact dataset constraints and `docs/member1.md` for
-the feature and model contract provided to later members.
+## Dataset
 
-## Proposed Architecture
+The project uses the supplied IMD Maitri historical dataset:
 
-AWS Data
-→ Data Quality Layer
-→ Feature Engineering
-→ AI Anomaly Detection
-→ Ensemble Decision Engine
-→ Root Cause Analysis
-→ Explainable AI
-→ Sensor Health
-→ Correction/Imputation
-→ Dashboard
+- Files: `Dataset/imd_maitri.csv` and `Dataset/imd_maitri.nc`
+- CSV coverage: 1985-01-01 to 2016-12-19
+- CSV observations: 155,170
+- Missing-data marker: `-999`
 
-## AI/ML Approach
+The CSV has no header row. Its mapping was verified against the NetCDF subset:
 
-The project will investigate a hybrid anomaly detection approach consisting of:
+| CSV field | Verified project field |
+| --- | --- |
+| `tempr` | `temperature_c` |
+| `rh` | `pressure_hpa` |
+| `ap` | `humidity_pct` |
+| `ws`, `wd` | Wind variables retained in the source, not baseline model inputs |
 
-1. Rule-based data quality checks
-2. Isolation Forest for multivariate anomaly detection
-3. LSTM Autoencoder for temporal anomaly detection
-4. Multivariate consistency analysis
-5. Ensemble anomaly scoring
-6. Root-cause classification
-7. Explainable AI
-8. Sensor health and degradation monitoring
+The preprocessing layer converts `-999` to missing values, interpolates only short internal gaps, and does not bridge longer outages. See [docs/dataset.md](docs/dataset.md) for complete source constraints.
 
-## Real-Time Demonstration
+## ML approach
 
-The prototype will use historical AWS observations and a local streaming simulator to reproduce real-time sensor observations.
+### Feature engineering
 
-Synthetic anomalies will be injected to demonstrate:
+The pipeline builds a reusable feature set from the three baseline measurements:
+
+- Cyclical hour-of-day and day-of-year features
+- Outage-aware segments
+- One-step deltas
+- Trailing 6-observation and 24-observation means and standard deviations
+
+Rolling features only use earlier observations and reset after long gaps. This prevents data leakage across outages and avoids using the reading being scored in its own history.
+
+### Isolation Forest baseline
+
+`IsolationForestBaseline` applies median imputation, standard scaling, and Scikit-learn Isolation Forest. It produces an `anomaly_score` where a larger value represents a more unusual observation. The model uses the earliest 70% of the time series for training and evaluates the later chronological holdout.
+
+### Temporal modelling
+
+The repository includes an LSTM Autoencoder for sequence-based temporal anomaly analysis. It uses 24-observation sequences to identify behavior that may not be apparent from a single observation.
+
+### Controlled evaluation scenarios
+
+The project injects deterministic, labelled scenarios into a copy of the later holdout data:
 
 - Sudden spikes
 - Sudden drops
 - Frozen sensor values
-- Gradual sensor drift
-- Missing observations
-- Communication failures
-- Multivariate inconsistencies
+- Gradual drift
+- Missing values
 
-The prototype is designed to operate without dependence on external weather APIs.
+These labels are used only for evaluation. They are never included in the model-training data.
 
-## Technology Stack
+## Running the project
 
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
-- PyTorch / TensorFlow
-- SHAP
-- Flask / FastAPI
-- SQLite
-- HTML
-- CSS
-- JavaScript
-- Plotly / Chart.js
-- Git / GitHub
+### Requirements
 
-## Project Structure
+- Python 3.10 or newer recommended
+- The supplied `Dataset/imd_maitri.csv` available in the project dataset location
+
+Install dependencies:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+Build processed features, generate synthetic evaluation scenarios, train the Isolation Forest baseline, and write the report:
+
+```powershell
+python -m src.run_member1
+```
+
+Run tests:
+
+```powershell
+pytest -q
+```
+
+Train the LSTM Autoencoder after generating the processed feature file:
+
+```powershell
+python -m src.models.train_lstm
+```
+
+## Outputs
+
+The reproducible pipeline creates these derived files:
+
+```text
+data/processed/imd_maitri_member1_features.csv
+data/processed/member1_report.json
+data/synthetic/imd_maitri_synthetic_anomalies.csv
+models/member1_isolation_forest.joblib
+models/lstm_autoencoder.pt
+models/lstm_scaler.joblib
+```
+
+Generated datasets and model artifacts are reproducible and excluded from Git.
+
+## Technology stack
+
+| Area | Technologies |
+| --- | --- |
+| Data processing | Python, Pandas, NumPy |
+| Baseline anomaly detection | Scikit-learn, Isolation Forest, Joblib |
+| Temporal modelling | PyTorch, LSTM Autoencoder |
+| Analysis and evaluation | Pandas, Matplotlib, Seaborn, Pytest |
+| Supporting tools | Flask, Plotly, SHAP, Jupyter |
+
+## Team contributions
+
+| Member | Responsibility |
+| --- | --- |
+| Member 1 | Data ingestion, validation, preprocessing, feature engineering, and Isolation Forest baseline |
+| Member 2 | Temporal anomaly analysis, LSTM Autoencoder, and anomaly-evaluation experiments |
+| Member 3 | Multi-sensor consistency analysis, synthetic anomaly scenarios, and fault-type testing |
+| Member 4 | Backend integration, REST API design, database handling, and streaming workflow |
+| Member 5 | Dashboard development, frontend design, data visualization, and alert presentation |
+| Member 6 | Explainability integration, testing, documentation, feasibility analysis, and SIH presentation preparation |
+
+## Repository structure
 
 ```text
 SkyGuard-AI/
-│
-├── backend/
-├── dashboard/
+├── Dataset/                     # Supplied raw IMD files, not modified
 ├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── synthetic/
+│   ├── processed/               # Reproducible feature outputs
+│   └── synthetic/               # Reproducible injected scenarios
 ├── docs/
-├── models/
-├── notebooks/
+│   ├── dataset.md               # Dataset mapping and constraints
+│   └── member1.md               # Feature and baseline contract
+├── models/                      # Reproducible trained artifacts
+├── notebooks/                   # EDA and model notebooks
 ├── src/
-│   ├── anomaly/
-│   ├── correction/
-│   ├── data/
-│   ├── explainability/
-│   ├── features/
-│   ├── health/
-│   ├── models/
-│   └── streaming/
+│   ├── anomaly/                 # Temporal and multivariate evaluation
+│   ├── data/                    # Loading, validation, preprocessing, injection
+│   ├── features/                # Temporal, rolling, and feature contracts
+│   ├── models/                  # Isolation Forest and LSTM Autoencoder
+│   └── run_member1.py           # Main reproducible baseline pipeline
 ├── tests/
-│
-├── .gitignore
 ├── README.md
 └── requirements.txt
+```
+
+## Limitations and next steps
+
+The present implementation works with historical AWS observations and controlled replay scenarios. A production deployment would add authenticated ingestion from physical AWS devices, station identifiers, alert routing, field-validated fault labels, model monitoring, and periodic retraining.
+
+## References
+
+- World Meteorological Organization, *Guide to Instruments and Methods of Observation* (WMO-No. 8)
+- Liu, Ting, and Zhou, *Isolation Forest*, ICDM 2008
+- Lundberg and Lee, *A Unified Approach to Interpreting Model Predictions*, NeurIPS 2017
